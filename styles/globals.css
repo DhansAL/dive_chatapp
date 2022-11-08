@@ -1,9 +1,24 @@
-html,
-body {
-  padding: 0;
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap");
+
+* {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen,
-    Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
+  padding: 0;
+}
+
+*,
+*::after,
+*::before {
+  box-sizing: inherit;
+}
+
+html {
+  line-height: 1.15;
+  box-sizing: border-box;
+  font-size: 62.5%;
+}
+
+body {
+  font-family: "Inter", sans-serif;
 }
 
 a {
@@ -11,16 +26,60 @@ a {
   text-decoration: none;
 }
 
-* {
-  box-sizing: border-box;
+.card {
+  -moz-perspective: 160rem;
+  perspective: 160rem;
+  position: relative;
+  height: 60rem;
+  width: 56rem;
+}
+.card__side {
+  height: 60rem;
+  transition: all 0.8s ease;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  border-radius: 1rem;
+  overflow: hidden;
+  background-color: #ffffff;
+  font-weight: 500;
+  font-size: 1.4rem;
+}
+/* .card__side--front {
+} */
+
+.card__side--back {
+  transform: rotateY(180deg);
+  position: relative;
+}
+/* .card:hover .card__side--front
+.card:hover .card__side--back */
+
+.backtofront {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  height: 4.2rem;
+  width: 4.2rem;
+  background-color: ghostwhite;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: 900;
+  font-size: 2rem;
+  cursor: pointer;
 }
 
-@media (prefers-color-scheme: dark) {
-  html {
-    color-scheme: dark;
-  }
-  body {
-    color: white;
-    background: black;
+.btn:active {
+  transform: scale(0.85);
+}
+
+@media screen and (max-width: 768px) {
+  .mdHidden {
+    display: none;
   }
 }
