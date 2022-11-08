@@ -5,7 +5,7 @@ import Sidebar from "../../components/Sidebar";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth, db } from "../../firebase";
 import getRecipientEmail from "../../utils/getRecipientEmail";
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 
 function Chat({ chat, messages }) {
   const [user] = useAuthState(auth);
@@ -18,6 +18,15 @@ function Chat({ chat, messages }) {
       block: "start",
     });
   };
+
+  useEffect(() => {
+    const observer = new IntersectionObserver((entries) => {
+      const entry = entries[0];
+      // console.log("this is for the vision page", entry)
+    });
+    observer.observe(endOfMessagesRef.current);
+
+  }, [endOfMessagesRef]);
 
   return (
     <Container>
@@ -93,4 +102,6 @@ const ChatContainer = styled.div`
   scrollbar-width: none;
 `;
 
-const EndOfMessage = styled.div``;
+const EndOfMessage = styled.div`
+${'' /* border:2px solid red; */}
+`;

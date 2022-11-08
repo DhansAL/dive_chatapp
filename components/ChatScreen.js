@@ -17,36 +17,25 @@ import { useCollection } from "react-firebase-hooks/firestore";
 import { auth, db } from "../firebase";
 import { useRouter } from "next/dist/client/router";
 import { Avatar, IconButton } from "@material-ui/core";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Picker } from "emoji-mart";
 import HomeOutlinedIcon from "@material-ui/icons/HomeOutlined";
 import Router from "next/router";
 
 function ChatScreen({ chat, messages }) {
-  window.SpeechRecognition =
-    window.SpeechRecognition || window.webkitSpeechRecognition;
-
-  let recognition = new window.SpeechRecognition();
 
   let emojiPicker;
 
   const inputElement = document.getElementById("inputField");
 
-  // const [tempDate, setTempDate] = useState('');
-
   const [emojiPickerState, SetEmojiPicker] = useState(false);
-
-  // const [temp, setTemp] = useState(false);
-
-  // const [dual, setDual] = useState('');
-
-  // const [nodeLength, setNodeLength] = useState();
 
   const [user] = useAuthState(auth);
 
   const [input, setInput] = useState("");
 
   const endOfMessagesRef = useRef(null);
+  const lastSeenDivRef = useRef(null);
 
   const router = useRouter();
 
@@ -57,6 +46,11 @@ function ChatScreen({ chat, messages }) {
       .collection("messages")
       .orderBy("timestamp", "asc")
   );
+
+  useEffect(() => {
+    console.log("messages");
+  }, [messagesSnapshot])
+
 
   const [recipientSnapshot] = useCollection(
     db
@@ -84,34 +78,12 @@ function ChatScreen({ chat, messages }) {
     }
   }
 
-  // const groupMessageByDate = (messageDate) => {
-  //   (messageDate) => setTempDate(messageDate);
-  //   if (tempDate === messageDate) {
-  //     // console.log(tempDate, messageDate);
-  //     // console.log('true');
-  //     return true;
-  //   } else {
-  //     // console.log('false');
-  //     return false;
-  //   }
-  // };
+
 
   const showMessages = () => {
     if (messagesSnapshot) {
       return messagesSnapshot.docs.map((message) => (
         <>
-          {/* {groupMessageByDate(
-            moment(message.data().timestamp?.toDate().getTime()).format('LL')
-          ) ? (
-            <DateIndictor>
-              {moment(message.data().timestamp?.toDate().getTime()).format(
-                'LL'
-              )}
-            </DateIndictor>
-          ) : (
-            ''
-          )} */}
-
           <Message
             key={message.id}
             user={message.data().user}
@@ -120,6 +92,7 @@ function ChatScreen({ chat, messages }) {
               timestamp: message.data().timestamp?.toDate().getTime(),
             }}
           />
+
         </>
       ));
     } else {
@@ -145,11 +118,14 @@ function ChatScreen({ chat, messages }) {
       },
       { merge: true }
     );
+    //----
+
 
     db.collection("chats").doc(router.query.id).collection("messages").add({
       timestamp: firebase.firestore.FieldValue.serverTimestamp(),
       message: input,
       user: user.email,
+      message_state: "DELIVERED",
       photoURL: user.photoURL,
     });
     playMessageSentSound();
@@ -161,19 +137,6 @@ function ChatScreen({ chat, messages }) {
   const recipientEmail = getRecipientEmail(chat.users, user);
   const surname = recipientEmail.split("@");
 
-  // const finder = () => {
-  //   if (messagesSnapshot) {
-  //     messagesSnapshot.docs.map(
-  //       (message) => () => setDual(message.data().user)
-  //     );
-  //   } else {
-  //     JSON.parse(messages).map((message) => () => setDual(message.user));
-  //   }
-  // };
-
-  // finder();
-
-  // const TypeOfMessage = dual !== user.email ? 'Sender' : 'Reciever';
 
   const playMessageSentSound = () => {
     const sm = new UIfx("/send message.mp3");
@@ -181,12 +144,7 @@ function ChatScreen({ chat, messages }) {
   };
 
   const openMenu = () => {
-    // var x = e.clientX - e.target.offsetLeft + 10;
-    // var y = e.clientY - e.target.offsetTop + 10;
-    // // console.log(e.target);
     const menu = document.querySelector(".mc");
-    // menu.style.bottom = `${y}px`;
-    // menu.style.left = `${x}px`;
     const compStyles = getComputedStyle(menu);
 
     if (compStyles.display === "none") {
@@ -203,7 +161,6 @@ function ChatScreen({ chat, messages }) {
       .doc(`${chat.id}`)
       .delete()
       .then(() => {
-        // console.log('Document successfully deleted!');
       })
       .catch((error) => {
         alert("Error removing chat: ", error);
@@ -212,40 +169,8 @@ function ChatScreen({ chat, messages }) {
     router.push(`/`);
   };
 
-  // () => {
-  //   if (document.querySelectorAll('#msg').length > nodeLength) {
-  //     const sm = new UIfx('/receive message.mp3');
-  //     sm.play();
-  //   }
-  // };
 
-  // const checkLength_and_CreateNewLine = (typeTerm) => {
-  //   if (typeTerm.length > 75) {
-  //     const inputElement = document.getElementById('inputField');
-  //     inputElement.value = typeTerm + '\n';
-  //     console.log(inputElement.value);
-  //   }
-  // };
 
-  const startListening = () => {
-    recognition.start();
-
-    document.getElementById("stopper").style.display = "block";
-
-    recognition.addEventListener("result", onSpeak);
-
-    function onSpeak(e) {
-      const msg = e.results[0][0].transcript;
-      inputElement.value += msg;
-    }
-
-    recognition.addEventListener("onspeechend", () => recognition.end());
-  };
-
-  const stopListening = () => {
-    recognition.stop();
-    document.getElementById("stopper").style.display = "none";
-  };
 
   return (
     <Container>
@@ -262,7 +187,7 @@ function ChatScreen({ chat, messages }) {
             {temp === true && TypeOfMessage !== 'Sender' ? 'Typing...' : ''}
           </Typing> */}
           {recipientSnapshot ? (
-            <p>
+            <p ref={lastSeenDivRef}>
               Last Active:{" "}
               {recipient?.lastSeen?.toDate() ? (
                 <TimeAgo datetime={recipient?.lastSeen?.toDate()} />
@@ -293,15 +218,16 @@ function ChatScreen({ chat, messages }) {
 
       <MessageContainer>
         {showMessages()}
+
         <EndOfMessage ref={endOfMessagesRef} />
       </MessageContainer>
 
-      <InputContainer>
+      <InputContainer >
         <IconContainer>{emojiPicker}</IconContainer>
         <IconButton onClick={triggerPicker}>
           <InsertEmoticonIcon
             style={{ fontSize: 25 }}
-            // onMouseLeave={triggerPicker1}
+          // onMouseLeave={triggerPicker1}
           />
         </IconButton>
         <Input
@@ -320,16 +246,6 @@ function ChatScreen({ chat, messages }) {
         </button>
         {input == "" ? (
           <>
-            <IconButton onClick={startListening}>
-              <MicIcon style={{ fontSize: 25 }} />{" "}
-            </IconButton>
-            <IconButton
-              onClick={stopListening}
-              style={{ display: "none" }}
-              id="stopper"
-            >
-              <StopRoundedIcon style={{ fontSize: 25 }} />{" "}
-            </IconButton>
           </>
         ) : (
           <IconButton onClick={sendMessage}>
@@ -347,17 +263,6 @@ function ChatScreen({ chat, messages }) {
 export default ChatScreen;
 
 const Container = styled.div``;
-
-const DateIndictor = styled.div`
-  background-color: lightblue;
-  width: 8rem;
-  height: 2rem;
-  margin: 0 auto;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  border-radius: 0.5rem;
-`;
 
 const Header = styled.div`
   position: sticky;

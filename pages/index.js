@@ -1,24 +1,8 @@
 import Head from "next/head";
 import Sidebar from "../components/Sidebar";
 import styled from "styled-components";
-import Image from "next/image";
 
 export default function Home() {
-  const rotateCardBack = () => {
-    const back = document.getElementById("back");
-    const front = document.getElementById("front");
-
-    front.style.transform = `rotateY(-180deg)`;
-    back.style.transform = "rotateY(0)";
-  };
-
-  const rotateCardFront = () => {
-    const back = document.getElementById("back");
-    const front = document.getElementById("front");
-
-    front.style.transform = `rotateY(0)`;
-    back.style.transform = "rotateY(-180deg)";
-  };
 
   return (
     <div>
