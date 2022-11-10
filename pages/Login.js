@@ -17,39 +17,16 @@ function Login() {
       </Head>
 
       <LoginContainer>
-        <Logo src="https://assets.stickpng.com/images/580b57fcd9996e24bc43c543.png" />
+
+        <h1>DIVE CHATAPP</h1>
+        <br />
         <Button onClick={signIn} variant="outlined">
+
           <Image src={googleIcon} alt="Google Icon" width={25} height={25} />
           <ButtonText>SignIn with Google</ButtonText>
         </Button>
       </LoginContainer>
-      <SocialContainer>
-        <a
-          href="https://github.com/Ajay-056/Whatsapp-Clone-NextJS"
-          target="_blank noreferrer"
-        >
-          <Image src="/icons8-github.svg" alt="github" height={40} width={40} />
-        </a>
-        <a href="https://www.twitter.com/balaajay19" target="_blank noreferrer">
-          <Image
-            src="/icons8-twitter-48.png"
-            alt="twitter"
-            height={40}
-            width={40}
-          />
-        </a>
-        <a
-          href="https://www.linkedin.com/in/ajay-krishna-065a1a162"
-          target="_blank noreferrer"
-        >
-          <Image
-            src="/icons8-linkedin-48.png"
-            alt="linkedin"
-            height={40}
-            width={40}
-          />
-        </a>
-      </SocialContainer>
+
     </Container>
   );
 }

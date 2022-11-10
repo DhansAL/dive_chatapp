@@ -6,8 +6,10 @@ import { useAuthState } from "react-firebase-hooks/auth";
 import { auth, db } from "../../firebase";
 import getRecipientEmail from "../../utils/getRecipientEmail";
 import { useEffect, useRef } from "react";
+import { useRouter } from "next/router";
 
-function Chat({ chat, messages }) {
+function Chat({ chat, messages, chatId }) {
+  const router = useRouter()
   const [user] = useAuthState(auth);
 
   const endOfMessagesRef = useRef(null);
@@ -18,15 +20,6 @@ function Chat({ chat, messages }) {
       block: "start",
     });
   };
-
-  useEffect(() => {
-    const observer = new IntersectionObserver((entries) => {
-      const entry = entries[0];
-      // console.log("this is for the vision page", entry)
-    });
-    observer.observe(endOfMessagesRef.current);
-
-  }, [endOfMessagesRef]);
 
   return (
     <Container>
@@ -42,7 +35,7 @@ function Chat({ chat, messages }) {
         <Sidebar />
       </div>
       <ChatContainer onLoad={scrollToBottom}>
-        <ChatScreen chat={chat} messages={messages} />
+        <ChatScreen chat={chat} messages={messages} chatId={chatId} />
         <EndOfMessage ref={endOfMessagesRef} />
       </ChatContainer>
     </Container>
@@ -80,6 +73,7 @@ export async function getServerSideProps(context) {
     props: {
       messages: JSON.stringify(messages),
       chat: chat,
+      chatId: context.query.id
     },
   };
 }
@@ -103,5 +97,5 @@ const ChatContainer = styled.div`
 `;
 
 const EndOfMessage = styled.div`
-${'' /* border:2px solid red; */}
+height:5px
 `;

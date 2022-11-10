@@ -22,7 +22,7 @@ import { Picker } from "emoji-mart";
 import HomeOutlinedIcon from "@material-ui/icons/HomeOutlined";
 import Router from "next/router";
 
-function ChatScreen({ chat, messages }) {
+function ChatScreen({ chat, messages, chatId }) {
 
   let emojiPicker;
 
@@ -35,6 +35,7 @@ function ChatScreen({ chat, messages }) {
   const [input, setInput] = useState("");
 
   const endOfMessagesRef = useRef(null);
+  const lastmessageRef = useRef(null);
   const lastSeenDivRef = useRef(null);
 
   const router = useRouter();
@@ -46,6 +47,64 @@ function ChatScreen({ chat, messages }) {
       .collection("messages")
       .orderBy("timestamp", "asc")
   );
+
+  useEffect(() => {
+    const observer = new IntersectionObserver((entries) => {
+      const entry = entries[0];
+      console.log(entry);
+      if (entry.isIntersecting) {
+        db.collection("chats").doc(chatId).collection("messages").get().then(function (messageSnapshot) {
+          messageSnapshot.forEach(function (doc) {
+            let messageData = doc.data()
+            // whoever recieved is reading latest message, UPDATE all previous messages to "read"
+            if (user.email !== messageData.user) {
+              doc.ref.update({ message_state: "READ" }, { merge: true })
+            }
+
+          })
+        })
+        console.log(true);
+        // db.collection("chats").get().then(function (querySnapshot) {
+        //   querySnapshot.forEach(function (doc) {
+        //     let chatdata = doc.data()
+        //     // find the targeted chat
+        //     if (chatdata.users[1] === chat.users[1]) {
+        //       if (user.email === chat.users[0]) {
+        //         // chat owner
+        //         doc.ref.update({ chatOwnerSeenAll: true }, { merge: true })
+        //       }
+        //       if (user.email === chat.users[1]) {
+        //         //recipient
+        //         doc.ref.update({ chatRecipientSeenll: true }, { merge: true })
+        //       }
+        //     }
+        //   })
+        // })
+      } else {
+        console.log(false);
+        // db.collection("chats").get().then(function (querySnapshot) {
+        //   querySnapshot.forEach(function (doc) {
+        //     let chatdata = doc.data()
+        //     if (chatdata.users[1] === chat.users[1]) {
+        //       if (user.email === chat.users[0]) {
+        //         // chat owner
+        //         doc.ref.update({ chatOwnerSeenAll: false }, { merge: true })
+        //       }
+        //       if (user.email === chat.users[1]) {
+        //         //recipient
+        //         doc.ref.update({ chatRecipientSeenll: false }, { merge: true })
+        //       }
+        //     }
+        //   })
+        // })
+      }
+    });
+    observer.observe(lastmessageRef.current);
+
+  }, [lastmessageRef, messagesSnapshot]);
+
+
+
 
   useEffect(() => {
     console.log("messages");
@@ -218,7 +277,7 @@ function ChatScreen({ chat, messages }) {
 
       <MessageContainer>
         {showMessages()}
-
+        <div style={{ height: "0px" }} ref={lastmessageRef}>-</div>
         <EndOfMessage ref={endOfMessagesRef} />
       </MessageContainer>
 
