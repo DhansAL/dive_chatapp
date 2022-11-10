@@ -41,12 +41,17 @@ function Chat({ id, users, mh }) {
       onClick={enterChat}
       style={falseArray.includes(recipientEmail) ? hide : show}
     >
+
       {recipientData ? (
         <UserAvatar src={recipientData?.photoURL} />
+
       ) : (
         <UserAvatar src={recipientEmail[0]} />
       )}
-      <p>{recipientEmail}</p>
+      <div style={{ display: "flex", flexDirection: "column" }}>
+        <p>{recipientEmail}</p>
+        {recipientData?.isOnline ? <b>online</b> : <b>offline</b>}
+      </div>
       <ArrowContainer className="ac">
         <KeyboardArrowDownRoundedIcon
           style={{

@@ -7,10 +7,8 @@ import { auth, db } from "../../firebase";
 import getRecipientEmail from "../../utils/getRecipientEmail";
 import { useEffect, useRef } from "react";
 import { useRouter } from "next/router";
-
 function Chat({ chat, messages, chatId }) {
-  const router = useRouter()
-  const [user] = useAuthState(auth);
+  const [user, loading] = useAuthState(auth);
 
   const endOfMessagesRef = useRef(null);
 
@@ -20,6 +18,21 @@ function Chat({ chat, messages, chatId }) {
       block: "start",
     });
   };
+
+  // useEffect(() => {
+  //   const timer = setInterval(() => {
+  //     if (!loading && user) {
+  //       console.log("updating user");
+  //       db.collection("users").doc(user.uid).set(
+  //         {
+  //           isOnline: true,
+  //         },
+  //         { merge: true }
+  //       );
+  //     }
+  //   }, 1000);
+  //   return () => clearInterval(timer);
+  // }, []);
 
   return (
     <Container>

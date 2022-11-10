@@ -164,13 +164,6 @@ function ChatScreen({ chat, messages, chatId }) {
 
   const sendMessage = (e) => {
     e.preventDefault();
-    //
-    const lastSeenDate = moment(recipient?.lastSeen?.toDate())
-    let dateCurrent = moment()
-    let lastSeenBy = dateCurrent.diff(lastSeenDate, "minutes")
-
-
-
     db.collection("users").doc(user.uid).set(
       {
         lastSeen: firebase.firestore.FieldValue.serverTimestamp(),
@@ -183,7 +176,7 @@ function ChatScreen({ chat, messages, chatId }) {
       timestamp: firebase.firestore.FieldValue.serverTimestamp(),
       message: input,
       user: user.email,
-      message_state: lastSeenBy < 15 ? "DELIVERED" : "SENT",
+      message_state: recipient.isOnline ? "DELIVERED" : "SENT",
       photoURL: user.photoURL,
     });
     playMessageSentSound();
@@ -245,11 +238,15 @@ function ChatScreen({ chat, messages, chatId }) {
           {recipientSnapshot ? (
             <p ref={lastSeenDivRef}>
               Last Active:{" "}
-              {recipient?.lastSeen?.toDate() ? (
-                <TimeAgo datetime={recipient?.lastSeen?.toDate()} />
-              ) : (
-                "Unavailable"
-              )}
+
+              {recipient?.isOnline ? "Online" :
+
+
+                recipient?.lastSeen?.toDate() ? (
+                  <TimeAgo datetime={recipient?.lastSeen?.toDate()} />
+                ) : (
+                  "Unavailable"
+                )}
             </p>
           ) : (
             <p>Loading Last Active...</p>

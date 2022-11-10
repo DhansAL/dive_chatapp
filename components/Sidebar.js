@@ -85,7 +85,13 @@ function Sidebar() {
             <MoreVertIcon style={{ fontSize: 22 }} />
           </IconButton> */}
           <IconButton
-            onClick={() => {
+            onClick={async () => {
+              await db.collection("users").doc(user.uid).set(
+                {
+                  isOnline: false,
+                },
+                { merge: true }
+              );
               auth.signOut();
               router.push("/");
             }}
