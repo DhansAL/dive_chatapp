@@ -27,8 +27,7 @@ function Sidebar() {
     .collection("chats")
     .where("users", "array-contains", user.email);
 
-  const [chatsSnapshot] = useCollection(userChatRef);
-
+  const [chatsSnapshot] = user ? useCollection(userChatRef) : null;
   const createChat = () => {
     const userEmailInput = prompt("Enter the gmail of the user to chat with: ");
 

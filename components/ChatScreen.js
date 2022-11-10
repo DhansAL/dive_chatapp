@@ -21,6 +21,7 @@ import { useState, useRef, useEffect } from "react";
 import { Picker } from "emoji-mart";
 import HomeOutlinedIcon from "@material-ui/icons/HomeOutlined";
 import Router from "next/router";
+import moment from "moment";
 
 function ChatScreen({ chat, messages, chatId }) {
 
@@ -51,7 +52,6 @@ function ChatScreen({ chat, messages, chatId }) {
   useEffect(() => {
     const observer = new IntersectionObserver((entries) => {
       const entry = entries[0];
-      console.log(entry);
       if (entry.isIntersecting) {
         db.collection("chats").doc(chatId).collection("messages").get().then(function (messageSnapshot) {
           messageSnapshot.forEach(function (doc) {
@@ -63,7 +63,6 @@ function ChatScreen({ chat, messages, chatId }) {
 
           })
         })
-        console.log(true);
         // db.collection("chats").get().then(function (querySnapshot) {
         //   querySnapshot.forEach(function (doc) {
         //     let chatdata = doc.data()
@@ -81,7 +80,6 @@ function ChatScreen({ chat, messages, chatId }) {
         //   })
         // })
       } else {
-        console.log(false);
         // db.collection("chats").get().then(function (querySnapshot) {
         //   querySnapshot.forEach(function (doc) {
         //     let chatdata = doc.data()
@@ -102,14 +100,6 @@ function ChatScreen({ chat, messages, chatId }) {
     observer.observe(lastmessageRef.current);
 
   }, [lastmessageRef, messagesSnapshot]);
-
-
-
-
-  useEffect(() => {
-    console.log("messages");
-  }, [messagesSnapshot])
-
 
   const [recipientSnapshot] = useCollection(
     db
@@ -168,8 +158,18 @@ function ChatScreen({ chat, messages, chatId }) {
     });
   };
 
+  const recipient = recipientSnapshot?.docs?.[0]?.data();
+  const recipientEmail = getRecipientEmail(chat.users, user);
+  const surname = recipientEmail.split("@");
+
   const sendMessage = (e) => {
     e.preventDefault();
+    //
+    const lastSeenDate = moment(recipient?.lastSeen?.toDate())
+    let dateCurrent = moment()
+    let lastSeenBy = dateCurrent.diff(lastSeenDate, "minutes")
+
+
 
     db.collection("users").doc(user.uid).set(
       {
@@ -179,12 +179,11 @@ function ChatScreen({ chat, messages, chatId }) {
     );
     //----
 
-
     db.collection("chats").doc(router.query.id).collection("messages").add({
       timestamp: firebase.firestore.FieldValue.serverTimestamp(),
       message: input,
       user: user.email,
-      message_state: "DELIVERED",
+      message_state: lastSeenBy < 15 ? "DELIVERED" : "SENT",
       photoURL: user.photoURL,
     });
     playMessageSentSound();
@@ -192,9 +191,7 @@ function ChatScreen({ chat, messages, chatId }) {
     scrollToBottom();
   };
 
-  const recipient = recipientSnapshot?.docs?.[0]?.data();
-  const recipientEmail = getRecipientEmail(chat.users, user);
-  const surname = recipientEmail.split("@");
+
 
 
   const playMessageSentSound = () => {

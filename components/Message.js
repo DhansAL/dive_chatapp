@@ -19,7 +19,7 @@ function Message({ user, message }) {
 
           {message.message}
           <TimeStamp>
-            {msgt === "sender" && (message.message_state === "DELIVERED" ? "sent" : "read")}
+            {msgt === "sender" && (message.message_state)}
             {" "}
             {message.timestamp ? moment(message.timestamp).format('LT') : '...'}
 
